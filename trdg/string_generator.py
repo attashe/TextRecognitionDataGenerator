@@ -52,8 +52,23 @@ def get_random_page_content() -> str:
     return page_content
 
 
-def create_strings_from_wikipedia(
-    minimum_length: int, count: int, lang: str
+def split_string(string, min_length, max_length):
+    substrings = []
+    start = 0
+    length = len(string)
+    
+    for i in range(length // max_length):
+        substr = string[start : start + max_length]
+        start += max_length
+        substrings.append(substr)
+    
+    if length - start > min_length:
+        substrings.append(string[start:])
+    
+    return substrings
+
+
+def create_strings_from_wikipediaminimum_length: int, count: int, lang: str, max_length: int =-1
 ) -> List[str]:
     """
     Create all string by randomly picking Wikipedia articles and taking sentences from them.
@@ -64,10 +79,13 @@ def create_strings_from_wikipedia(
     while len(sentences) < count:
         page_content = get_random_page_content()
         processed_content = page_content.replace("\n", " ").split(". ")
-        sentence_candidates = [
-            s.strip() for s in processed_content if len(s.split()) > minimum_length
-        ]
-        sentences.extend(sentence_candidates)
+        sentence_candidates = [s.strip() for s in processed_content if len(s.split()) > minimum_length]
+        
+        for candidate in sentence_candidates:
+            strings = split_string(candidate, minimum_length, max_length)
+            if len(strings) > 0:
+                sentences.extend(strings)
+        # sentences.extend(sentence_candidates)
 
     return sentences[0:count]
 

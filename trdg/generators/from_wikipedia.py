@@ -14,6 +14,7 @@ class GeneratorFromWikipedia:
         self,
         count: int = -1,
         minimum_length: int = 1,
+        maximum_length: int =-1,
         fonts: List[str] = [],
         language: str = "en",
         size: int = 32,
@@ -46,14 +47,14 @@ class GeneratorFromWikipedia:
         self.generated_count = 0
         self.count = count
         self.minimum_length = minimum_length
+        self.maximum_length = maximum_length
         self.language = language
 
         self.batch_size = min(max(count, 1), 1000)
         self.steps_until_regeneration = self.batch_size
         self.generator = GeneratorFromStrings(
-            create_strings_from_wikipedia(
-                self.minimum_length, self.batch_size, self.language
-            ),
+            create_strings_from_wikipedia(self.minimum_length, self.batch_size, 
+                                          self.language, self.maximum_length),
             count,
             fonts if len(fonts) else load_fonts(language),
             language,
@@ -95,7 +96,10 @@ class GeneratorFromWikipedia:
     def next(self):
         if self.generator.generated_count >= self.steps_until_regeneration:
             self.generator.strings = create_strings_from_wikipedia(
-                self.minimum_length, self.batch_size, self.language
+                self.minimum_length,
+                self.batch_size,
+                self.language,
+                self.maximum_length,
             )
             self.steps_until_regeneration += self.batch_size
         return self.generator.next()
